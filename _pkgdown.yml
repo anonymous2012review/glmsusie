@@ -1,0 +1,64 @@
+url: https://anonymous2012review.github.io/glmsusie
+destination: doc
+navbar:
+  left:
+    - text: "About"
+      href: index.html
+    - text: "Vignettes"
+      href: articles/index.html
+    - text: "Tags"
+      href: articles/tags.html
+    - text: "Functions"
+      href: reference/index.html
+  right:
+    - icon: fa-brands fa-github
+      href: https://github.com/anonymous2012review/glmsusie
+      aria-label: "Github repository"
+    - icon: fa-solid fa-envelope
+      href: mailto:anonymous2012review@gmail.com
+      aria-label: "Contact email"
+    - icon: fa-solid fa-book
+      href: https://doi.org/your-paper-doi
+      aria-label: "Research paper"
+
+home:
+  sidebar:
+    structure: [links, license, citation, dev, authors]
+
+articles:
+  index:
+    title: "Vignettes"
+    contents:
+      - index
+      - tags
+  sections:
+    title: "Vignettes"
+    contents:
+        - mwe
+        - gaussian
+        - logit
+        - poisson
+        - cox
+
+template:
+  bootstrap: 5
+  light-switch: false
+  math-rendering: katex
+  bslib:
+    bg: "white"
+    fg: "black"
+    navbar-color: "black"
+    navbar-bg: "#B61BA9"
+    primary: "#B61BA9"
+    navbar-light-color: "black"      # Text color for navbar items
+    navbar-light-hover-color: "black" # Hover color for navbar items
+    navbar-light-active-color: "black" # Active link color
+    link-color: "#B61BA9"
+    link-hover-color: "#B61BA9"
+
+    btn-link-box-shadow: "none"
+    btn-link-hover-box-shadow: "none"
+    navbar-light-active-shadow: "none"
+
+    base_font: {google: "Lato"}
+    heading_font: {google: "Lato"}

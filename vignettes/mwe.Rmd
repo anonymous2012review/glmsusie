@@ -1,0 +1,131 @@
+---
+title: "A Minimal Example"
+author: "Anonymous Author"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+    fig_width: 5
+    fig_height: 4
+tags: 
+  - "linear regression"
+  - "Gaussian"
+vignette: >
+  %\VignetteIndexEntry{A Minimal Example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse   = TRUE,
+  comment    = "##",
+  echo       = TRUE,
+  message    = FALSE,
+  warning    = FALSE,
+  fig.align  = "center",
+  dpi        = 120
+)
+library(ggplot2)
+```
+
+# Introduction
+
+The *glmsusie* package implements the generalized sum of single effects (gSuSiE) model, that represents the overall effect as a sum of a small number of *single-effect* components. In this vignette we:
+
+- Simulate a high-dimensional sparse linear regression dataset
+- Apply gSuSiE to perform variable selection via `glmsusie()`
+- Visualize coefficient estimates, posterior inclusion probabilities (PIPs), credible sets (CSs) and so on.
+- Evaluate predictive performance vs. [SuSiE](https://stephenslab.github.io/susieR/index.html)
+
+# Simulate data
+We generate a sparse linear regression dataset with $n=1000$ observations and $p=1000$ predictors, where only 4 variables have nonzero effects.
+
+```{r simulate}
+set.seed(42)
+n <- 1000    # sample size
+p <- 1000    # number of predictors
+L <- 10      # number of single-effect components
+
+# true sparse coefficients
+theta_true <- rep(0, p)
+theta_true[c(100, 200, 300, 400)] <- 1
+
+# covariate matrix and response
+X <- matrix(rnorm(n * p), nrow = n, ncol = p)
+y <- drop(X %*% theta_true + rnorm(n))
+```
+
+# Fit the LASER model
+We allow up to ($L=10$) single effects and use the default Gaussian family. Generally, this method is robust to larger $L$ values and present minimal risk of overfitting. 
+ 
+```{r fit}
+# load glmsusie library
+library(glmsusie)
+
+# model fitting
+fit <- glmsusie(
+  X              = X,
+  y              = y,
+  L              = L,
+  family         = gaussian()
+)
+summary(fit)
+```
+
+
+# Results
+
+## Coefficient estimates
+We recover four peaks at the true locations
+
+```{r coef, fig.alt = "Estimated regression coefficients showing variable selection results."}
+# plot coefficients
+plot(fit, which="coefficients")
+```
+
+## Estimated inclusion probability
+Shows the inclusion probability each variable is included in any single-effect component:
+
+```{r prob, fig.alt = "Posterior inclusion probabilities"}
+# plot coefficients
+plot(fit, which="probabilities")
+```
+
+## Estimated 95% confidence sets
+Each confidence set (CS) contains a small group of variables where at least one is likely to be active, with $95\%$ confidence.
+
+```{r cs, fig.alt = "Credible sets"}
+# plot coefficients
+plot(fit, which="sets")
+```
+
+## Performance evalution
+
+```{r perform}
+rmse_glmsusie <- sqrt(mean(residuals(fit)^2))
+
+# compare with SuSiE
+fitted_susie  <- fitted(susieR::susie(X, y, L))
+rmse_susie    <- sqrt(mean((y - fitted_susie)^2))
+
+data.frame(
+  Method = c("susie", "glmsusie"),
+  RMSE   = c(rmse_susie, rmse_glmsusie)
+)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+

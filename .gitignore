@@ -1,0 +1,17 @@
+*.o
+*.so
+*.dll
+.Rproj.user
+.Rhistory
+.RData
+.DS_Store
+.*.history
+.Rbuildignore
+
+files/
+docs/
+inst/doc
+/doc/
+/Meta/
+data/
+output/

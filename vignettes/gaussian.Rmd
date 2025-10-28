@@ -1,0 +1,195 @@
+---
+title: "Gaussian Linear Regression with Correlated Predictors"
+author: "Anonymous Author"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+    fig_width: 5
+    fig_height: 4
+tags: 
+  - "linear regression"
+  - "Gaussian"
+  - "correlated predictors"
+vignette: >
+  %\VignetteIndexEntry{Gaussian Linear Regression with Correlated Predictors}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse   = TRUE,
+  comment    = "##",
+  echo       = TRUE,
+  message    = FALSE,
+  warning    = FALSE,
+  fig.align  = "center",
+  dpi        = 120
+)
+library(ggplot2)
+```
+
+# Introduction
+
+The **glmsusie** package implements the generalized sum of single effects (gSuSiE) model, which represents the overall effect as a sum of a small number of *single-effect* components. This approach extends the [SuSiE method](https://stephenslab.github.io/susieR/index.html) to generalized linear models.
+
+In this vignette, we demonstrate gSuSiE's performance with highly correlated predictors:
+
+- Simulate a block-wise correlation structure with 100 predictors
+- Apply gSuSiE to perform variable selection via `glmsusie()`
+- Visualize coefficient estimates, posterior inclusion probabilities (PIPs), and credible sets (CSs)
+- Compare performance against [SuSiE](https://stephenslab.github.io/susieR/index.html)
+
+# Simulate data
+
+We generate $n=5000$ observations and $p=100$ predictors with block-wise correlation. Every 10 consecutive variables are highly correlated ($\rho=0.98$) within each block, while blocks are independent. Only 4 variables have nonzero effects, located in different correlation blocks.
+
+```{r simulate}
+set.seed(42)
+n <- 5000     # sample size
+p <- 100     # number of predictors
+L <- 10      # number of single-effect components
+block_size <- 10
+n_blocks <- p / block_size
+rho <- 0.98   # within-block correlation
+
+# Create block-wise correlation matrix
+Sigma <- matrix(0, p, p)
+for (b in 1:n_blocks) {
+  block_idx <- ((b-1)*block_size + 1):(b*block_size)
+  # Within-block correlation matrix
+  block_corr <- matrix(rho, block_size, block_size)
+  diag(block_corr) <- 1
+  Sigma[block_idx, block_idx] <- block_corr
+}
+
+# Generate correlated predictors
+X <- MASS::mvrnorm(n, mu = rep(0, p), Sigma = Sigma)
+
+# True sparse coefficients (one per block, spread across different blocks)
+theta_true <- rep(0, p)
+theta_true[c(3, 18, 47, 82)] <- c(1, -1, 1, -1)
+
+# Generate response
+y <- drop(X %*% theta_true + rnorm(n, sd = 3))
+
+cat("True nonzero coefficients at positions:", which(theta_true != 0), "\n")
+cat("True coefficient values:", theta_true[theta_true != 0], "\n")
+```
+
+# Fit gSuSiE model
+
+We allow up to $L=10$ single effects and use the default Gaussian family. 
+
+```{r fit}
+# Load glmsusie library
+library(glmsusie)
+
+# Model fitting
+fit <- glmsusie(
+  X      = X,
+  y      = y,
+  L      = L,
+  family = gaussian()
+)
+
+summary(fit)
+```
+
+# Results
+
+## Coefficient estimates
+
+The method successfully identifies the true signal locations despite high correlation within blocks:
+
+```{r coef, fig.alt = "Estimated regression coefficients showing variable selection results."}
+plot(fit, which = "coefficients")
+```
+
+## Posterior inclusion probabilities
+
+Shows the probability that each variable is included in any single-effect component:
+
+```{r prob, fig.alt = "Posterior inclusion probabilities"}
+plot(fit, which = "probabilities")
+```
+
+## 95% credible sets
+
+Each credible set contains variables where at least one is likely active with 95% confidence. Note how the method handles correlated variables within blocks:
+
+```{r cs, fig.alt = "Credible sets"}
+plot(fit, which = "sets")
+```
+
+## Performance evaluation
+
+Compare predictive performance between methods:
+
+```{r perform}
+# Prediction performance
+rmse_glmsusie <- sqrt(mean(residuals(fit)^2))
+
+# Compare with SuSiE
+fit_susie <- susieR::susie(X, y, L = L)
+fitted_susie <- fitted(fit_susie)
+rmse_susie <- sqrt(mean((y - fitted_susie)^2))
+
+performance <- data.frame(
+  Method = c("SuSiE", "gSuSiE"),
+  RMSE = c(rmse_susie, rmse_glmsusie)
+)
+
+print(performance)
+```
+
+## SuSiE credible sets comparison
+
+Examine the credible sets identified by SuSiE:
+
+```{r susie_sets}
+# SuSiE credible sets
+cat("SuSiE Credible Sets:\n")
+susie_sets <- fit_susie$sets$cs
+if (length(susie_sets) > 0) {
+  for (i in seq_along(susie_sets)) {
+    cs_vars <- susie_sets[[i]]
+    cs_pips <- fit_susie$pip[cs_vars]
+    
+    # Format variables with their PIPs
+    var_pip_strings <- paste0(cs_vars, " (PIP: ", round(cs_pips, 4), ")")
+    
+    cat("CS", names(susie_sets)[i], "contains variables:", 
+        paste(var_pip_strings, collapse = ", "), "\n")
+  }
+} else {
+  cat("No credible sets identified by SuSiE\n")
+}
+```
+
+## Visualize SuSiE credible sets
+```{r susie_cs_plot}
+# Create matrix for SuSiE credible sets visualization
+if (length(susie_sets) > 0) {
+  # Create probability matrix for credible sets
+  susie_cs_matrix <- matrix(0, nrow = length(susie_sets), ncol = p)
+  
+  for (i in seq_along(susie_sets)) {
+    cs_vars <- susie_sets[[i]]
+    # Use PIPs as probabilities for variables in the credible set
+    susie_cs_matrix[i, cs_vars] <- fit_susie$pip[cs_vars]
+  }
+  
+  # Plot SuSiE credible sets using our plotting function
+  plot_cs_matrix(susie_cs_matrix, 
+                 row_labels = paste0("SuSiE CS_", names(susie_sets)),
+                 alpha = 0.05)
+} else {
+  cat("No SuSiE credible sets to visualize\n")
+}
+```
+
+# Conclusion
+
+This example demonstrates that gSuSiE effectively handles very highly correlated predictors. The method identifies informative variables even when they are embedded within correlation blocks, providing both point estimates and uncertainty quantification through credible sets.
