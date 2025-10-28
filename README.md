@@ -316,6 +316,6 @@ run_elastic_net(X, y)
 
 ## License
 
-GPL-3 | © 2025 Anonymous Author
+GPL-3 | © 2025 Anonymous Authors
 
 > _“Extensible and generalizable variable selection under strong multicollinear settings---glmsusie delivers both statistical rigor and computational efficiency.”_  

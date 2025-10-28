@@ -14,7 +14,7 @@ At its core, gSuSiE decomposes regression effects into additive “single-effect
 
 Beyond credible sets and *posterior inclusion probabilities (PIPs)*, gSuSiE also provides *standard errors (SEs), $p$-values, and 2BIC values* as additional diagnostic measures, offering both Bayesian and frequentist perspectives on variable importance.
 
-This R package was developed by **Anonymous Author** for blind peer review purposes.
+This R package was developed by **Anonymous Authors** for blind peer review purposes.
 
 ### Quick start
 

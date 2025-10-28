@@ -1,6 +1,6 @@
 ---
 title: "Poisson Regression with Correlated Predictors"
-author: "Anonymous Author"
+author: "Anonymous Authors"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:

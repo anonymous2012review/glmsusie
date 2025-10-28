@@ -1,6 +1,6 @@
 ---
 title: "A Minimal Example"
-author: "Anonymous Author"
+author: "Anonymous Authors"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
