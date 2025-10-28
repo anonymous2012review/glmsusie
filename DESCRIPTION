@@ -7,7 +7,7 @@ Authors@R: c(person("Anonymous", "Author", email = "anonymous@example.com", role
 Description: This package performs variable selection for regression models while accounting for uncertainty. It identifies important predictors even when they are highly correlated with each other. The method works with generalized linear models and survival analysis (Cox models). It provides credible sets that show which variables are likely to be important, along with measures of uncertainty. The package is fast thanks to optimized C++ code and offers flexible settings for different analysis needs.
 URL: https://github.com/anonymous2012review/glmsusie
 BugReports: https://github.com/anonymous2012review/glmsusie/issues
-License: MIT + file LICENSE
+License: MIT
 Maintainer: Anonymous Author <anonymous@example.com>
 Depends: 
     R (>= 3.5.0)
