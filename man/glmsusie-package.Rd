@@ -5,7 +5,7 @@
 \alias{glmsusie-package}
 \title{glmsusie: gSuSiE: Generalized Sum of Single Effects for Generalized Linear and Cox Models}
 \description{
-Implements likelihood-based additive single-effect regression (LASER) via a blockwise coordinate ascent algorithm, providing confident sets for variable selection with uncertainty quantification. Features include robust variable selection under high multicollinearity, confident sets that capture posterior uncertainty in variable inclusion, flexible modeling for linear, generalized linear, and Cox regression, high performance via C++ backend, and configurable parameters for number of effects, coverage, and convergence tolerance.
+This package performs variable selection for regression models while accounting for uncertainty. It identifies important predictors even when they are highly correlated with each other. The method works with generalized linear models and survival analysis (Cox models). It provides credible sets that show which variables are likely to be important, along with measures of uncertainty. The package is fast thanks to optimized C++ code and offers flexible settings for different analysis needs.
 }
 \seealso{
 Useful links:
